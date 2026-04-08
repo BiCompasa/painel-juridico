@@ -6,100 +6,361 @@
 <title>Dashboard Jurídico · TV</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { background: #15182F; font-family: 'Segoe UI', sans-serif; overflow: hidden; width: 100vw; height: 100vh; }
-  #slide { position: fixed; inset: 0; width: 100%; height: 100%; border: none; background: #15182F; }
-  #hud { position: fixed; bottom: 0; left: 0; right: 0; height: 52px; display: flex; align-items: center; justify-content: space-between; padding: 0 28px; background: linear-gradient(to top, rgba(0,0,0,0.82), transparent); z-index: 100; opacity: 1; transition: opacity 1.2s ease; }
-  #hud.hidden { opacity: 0; pointer-events: none; }
-  #page-name { font-size: 13px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(255,255,255,0.55); }
-  #dots { display: flex; gap: 8px; align-items: center; }
-  .dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.25); transition: all 0.4s ease; }
-  .dot.active { background: #ffffff; transform: scale(1.4); }
-  #progress-wrap { position: fixed; bottom: 0; left: 0; right: 0; height: 3px; background: rgba(255,255,255,0.08); z-index: 101; }
-  #progress-bar { height: 100%; background: #4f8ef7; width: 0%; transition: width linear; }
-  #overlay { position: fixed; inset: 0; background: #15182F; z-index: 99; opacity: 0; pointer-events: none; transition: opacity 0.5s ease; }
-  #overlay.fade-in { opacity: 1; }
-  #overlay.fade-out { opacity: 0; }
-  #auth-warning { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: rgba(220,80,60,0.92); color: #fff; font-size: 13px; font-weight: 500; padding: 10px 22px; border-radius: 8px; z-index: 200; display: none; letter-spacing: 0.04em; white-space: nowrap; }
+
+  body {
+    background: #0a0c10;
+    font-family: 'Segoe UI', sans-serif;
+    overflow: hidden;
+    width: 100vw;
+    height: 100vh;
+  }
+
+  #slide {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+    background: #0a0c10;
+    z-index: 1;
+  }
+
+  #preload-frame {
+    position: fixed;
+    width: 1px;
+    height: 1px;
+    left: -9999px;
+    top: -9999px;
+    opacity: 0;
+    pointer-events: none;
+    border: none;
+  }
+
+  #hud {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 28px;
+    background: linear-gradient(to top, rgba(0,0,0,0.82), transparent);
+    z-index: 100;
+    opacity: 1;
+    transition: opacity 1.2s ease;
+  }
+
+  #hud.hidden {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  #page-name {
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.55);
+  }
+
+  #dots {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.25);
+    transition: all 0.4s ease;
+  }
+
+  .dot.active {
+    background: #ffffff;
+    transform: scale(1.4);
+  }
+
+  #progress-wrap {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: rgba(255,255,255,0.08);
+    z-index: 101;
+  }
+
+  #progress-bar {
+    height: 100%;
+    background: #4f8ef7;
+    width: 0%;
+    transition: width linear;
+  }
+
+  #overlay {
+    position: fixed;
+    inset: 0;
+    background: #0a0c10;
+    z-index: 99;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s ease;
+  }
+
+  #overlay.fade-in {
+    opacity: 1;
+  }
+
+  #overlay.fade-out {
+    opacity: 0;
+  }
+
+  #auth-warning {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(220,80,60,0.92);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 10px 22px;
+    border-radius: 8px;
+    z-index: 200;
+    display: none;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+  }
+
+  #loading {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255,255,255,0.72);
+    font-size: 15px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    background: #0a0c10;
+    z-index: 98;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+  }
+
+  #loading.show {
+    opacity: 1;
+  }
 </style>
 </head>
 <body>
+
 <div id="overlay"></div>
+<div id="loading">Carregando painel...</div>
+
 <iframe id="slide" src="about:blank" allowfullscreen></iframe>
+<iframe id="preload-frame" src="about:blank" tabindex="-1" aria-hidden="true"></iframe>
+
 <div id="hud">
   <span id="page-name"></span>
   <div id="dots"></div>
 </div>
+
 <div id="progress-wrap"><div id="progress-bar"></div></div>
+
 <div id="auth-warning">Sessão expirada — faça login no Power BI para retomar o slideshow</div>
+
 <script>
   const CTID = "d58f1e74-56ed-4318-8e84-2c3440cf361a";
   const REL1 = "2dee392c-0ec2-474f-8921-df22058b942e";
   const REL2 = "0e88a603-77cf-44fc-af62-b2a058771379";
+
   function embedUrl(reportId, pageName) {
-    const base = "https://app.powerbi.com/reportEmbed?reportId=" + reportId + "&chromeless=1&autoAuth=true&ctid=" + CTID;
+    const base = "https://app.powerbi.com/reportEmbed?reportId=" + reportId + "&autoAuth=true&ctid=" + CTID;
     return pageName ? base + "&pageName=" + pageName : base;
   }
+
   const PAGES = [
-    { nome: "Painel Gerencial",  url: embedUrl(REL1) },
-    { nome: "Overview",          url: embedUrl(REL2, "2f25e642206d833a5071") },
-    { nome: "Overview II",       url: embedUrl(REL2, "28b95133285bd2096a2b") },
-    { nome: "Em Atividade",      url: embedUrl(REL2, "bd159519bd3d01674395") },
-    { nome: "Baixa Provisoria",  url: embedUrl(REL2, "3be13a634315c9f5cd45") },
-    { nome: "Encerrados",        url: embedUrl(REL2, "939bd46cc4ddb674cc91") },
-    { nome: "Decisoes",          url: embedUrl(REL2, "5c465d82f3c8798422b2") },
+    { nome: "Painel Gerencial", url: embedUrl(REL1) },
+    { nome: "Overview",         url: embedUrl(REL2, "2f25e642206d833a5071") },
+    { nome: "Overview II",      url: embedUrl(REL2, "28b95133285bd2096a2b") },
+    { nome: "Em Atividade",     url: embedUrl(REL2, "bd159519bd3d01674395") },
+    { nome: "Baixa Provisoria", url: embedUrl(REL2, "3be13a634315c9f5cd45") },
+    { nome: "Encerrados",       url: embedUrl(REL2, "939bd46cc4ddb674cc91") },
+    { nome: "Decisoes",         url: embedUrl(REL2, "5c465d82f3c8798422b2") }
   ];
-  const TEMPO_MS = 45000;
-  const iframe      = document.getElementById('slide');
-  const pageNameEl  = document.getElementById('page-name');
-  const dotsEl      = document.getElementById('dots');
+
+  // Tempo que a página fica visível DEPOIS de carregar
+  const TEMPO_EXIBICAO_MS = 20000;
+
+  // Tempo máximo de espera por carregamento antes de seguir
+  const TEMPO_MAX_CARGA_MS = 45000;
+
+  // Pequeno atraso mínimo após carregar para evitar sensação de "piscar"
+  const TEMPO_MINIMO_POS_CARGA_MS = 3000;
+
+  const iframe = document.getElementById('slide');
+  const preloadFrame = document.getElementById('preload-frame');
+  const pageNameEl = document.getElementById('page-name');
+  const dotsEl = document.getElementById('dots');
   const progressBar = document.getElementById('progress-bar');
-  const overlay     = document.getElementById('overlay');
-  const hud         = document.getElementById('hud');
+  const overlay = document.getElementById('overlay');
+  const hud = document.getElementById('hud');
   const authWarning = document.getElementById('auth-warning');
-  let current = 0, timer = null, hudTimer = null;
+  const loading = document.getElementById('loading');
+
+  let current = 0;
+  let timer = null;
+  let hudTimer = null;
+  let loadTimeout = null;
+  let transitionLock = false;
+
+  const loadedUrls = new Set();
+  let preloadedUrl = null;
+
   PAGES.forEach((_, i) => {
     const d = document.createElement('div');
     d.className = 'dot' + (i === 0 ? ' active' : '');
     dotsEl.appendChild(d);
   });
-  function getDots() { return document.querySelectorAll('.dot'); }
+
+  function getDots() {
+    return document.querySelectorAll('.dot');
+  }
+
   function showHud() {
     hud.classList.remove('hidden');
     clearTimeout(hudTimer);
     hudTimer = setTimeout(() => hud.classList.add('hidden'), 4000);
   }
-  iframe.addEventListener('load', () => {
+
+  function setLoading(show) {
+    loading.classList.toggle('show', !!show);
+  }
+
+  function resetProgress() {
+    progressBar.style.transition = 'none';
+    progressBar.style.width = '0%';
+  }
+
+  function startProgress(ms) {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        progressBar.style.transition = 'width ' + ms + 'ms linear';
+        progressBar.style.width = '100%';
+      });
+    });
+  }
+
+  function checkAuthWarning() {
     try {
-      const url = iframe.contentWindow.location.href;
-      const isLogin = url.includes('login.microsoftonline') || url.includes('login.microsoft') || url.includes('login.live');
+      const url = iframe.contentWindow.location.href || '';
+      const isLogin =
+        url.includes('login.microsoftonline') ||
+        url.includes('login.microsoft') ||
+        url.includes('login.live');
       authWarning.style.display = isLogin ? 'block' : 'none';
-    } catch(e) { authWarning.style.display = 'none'; }
-  });
+    } catch (e) {
+      authWarning.style.display = 'none';
+    }
+  }
+
+  function preloadNext(index) {
+    const nextPage = PAGES[index % PAGES.length];
+    if (!nextPage) return;
+    if (loadedUrls.has(nextPage.url)) return;
+    if (preloadedUrl === nextPage.url) return;
+
+    preloadedUrl = nextPage.url;
+    preloadFrame.src = nextPage.url;
+  }
+
+  function finishOverlay() {
+    overlay.classList.remove('fade-in');
+    overlay.classList.add('fade-out');
+    setTimeout(() => overlay.classList.remove('fade-out'), 500);
+  }
+
+  function scheduleNext() {
+    clearTimeout(timer);
+    resetProgress();
+    startProgress(TEMPO_EXIBICAO_MS);
+    timer = setTimeout(() => goTo(current + 1), TEMPO_EXIBICAO_MS);
+  }
+
+  function updateUi(index) {
+    const page = PAGES[index];
+    pageNameEl.textContent = page.nome;
+    getDots().forEach((d, i) => d.classList.toggle('active', i === index));
+    showHud();
+  }
+
+  function onFrameLoaded(expectedUrl, index) {
+    clearTimeout(loadTimeout);
+    loadedUrls.add(expectedUrl);
+    checkAuthWarning();
+    setLoading(false);
+
+    setTimeout(() => {
+      finishOverlay();
+      scheduleNext();
+      preloadNext(index + 1);
+      transitionLock = false;
+    }, TEMPO_MINIMO_POS_CARGA_MS);
+  }
+
   function goTo(index) {
+    if (transitionLock) return;
+    transitionLock = true;
+
+    clearTimeout(timer);
+    clearTimeout(loadTimeout);
+
     overlay.classList.add('fade-in');
+    setLoading(true);
+    resetProgress();
+
     setTimeout(() => {
       current = index % PAGES.length;
       const page = PAGES[current];
-      iframe.src = page.url;
-      pageNameEl.textContent = page.nome;
-      getDots().forEach((d, i) => d.classList.toggle('active', i === current));
-      showHud();
-      overlay.classList.remove('fade-in');
-      overlay.classList.add('fade-out');
-      progressBar.style.transition = 'none';
-      progressBar.style.width = '0%';
-      requestAnimationFrame(() => requestAnimationFrame(() => {
-        progressBar.style.transition = 'width ' + TEMPO_MS + 'ms linear';
-        progressBar.style.width = '100%';
-      }));
-      setTimeout(() => overlay.classList.remove('fade-out'), 500);
-      clearTimeout(timer);
-      timer = setTimeout(() => goTo(current + 1), TEMPO_MS);
+      updateUi(current);
+
+      const expectedUrl = page.url;
+
+      iframe.onload = null;
+      iframe.onload = () => onFrameLoaded(expectedUrl, current);
+
+      loadTimeout = setTimeout(() => {
+        console.warn('Tempo máximo de carga atingido para:', expectedUrl);
+        setLoading(false);
+        finishOverlay();
+        scheduleNext();
+        preloadNext(current + 1);
+        transitionLock = false;
+      }, TEMPO_MAX_CARGA_MS);
+
+      iframe.src = expectedUrl;
     }, 500);
   }
+
+  document.addEventListener('click', showHud);
+
+  preloadFrame.onload = () => {
+    try {
+      const url = preloadFrame.src;
+      if (url && url !== 'about:blank') {
+        loadedUrls.add(url);
+      }
+    } catch (e) {}
+  };
+
   goTo(0);
   hudTimer = setTimeout(() => hud.classList.add('hidden'), 4000);
-  document.addEventListener('click', showHud);
 </script>
 </body>
 </html>
