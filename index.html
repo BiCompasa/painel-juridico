@@ -79,60 +79,6 @@
     z-index: 120;
   }
 
-  #top-bar {
-    position: fixed;
-    top: 18px;
-    left: 22px;
-    right: 22px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    z-index: 115;
-    pointer-events: none;
-  }
-
-  #brand-chip,
-  #status-chip {
-    height: 34px;
-    display: inline-flex;
-    align-items: center;
-    padding: 0 14px;
-    border: 1px solid var(--line);
-    border-radius: 999px;
-    background: rgba(12,14,28,0.45);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    box-shadow: var(--shadow);
-  }
-
-  #brand-chip {
-    gap: 10px;
-  }
-
-  #brand-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--accent);
-    box-shadow: 0 0 16px rgba(200,169,107,0.65);
-  }
-
-  #brand-text {
-    color: rgba(255,255,255,0.88);
-    font-size: 12px;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    font-weight: 600;
-  }
-
-  #status-chip {
-    color: rgba(255,255,255,0.60);
-    font-size: 11px;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    font-weight: 600;
-  }
-
   #hud {
     position: fixed;
     left: 22px;
@@ -326,14 +272,6 @@
 <body>
 
 <div id="top-line"></div>
-
-<div id="top-bar">
-  <div id="brand-chip">
-    <span id="brand-dot"></span>
-    <span id="brand-text">Jurídico Executive Panel</span>
-  </div>
-  <div id="status-chip">Power BI Live</div>
-</div>
 
 <div id="frame-wrap">
   <iframe id="slide" src="about:blank" allowfullscreen></iframe>
