@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Jurídico · TV</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #0a0c10;
+    font-family: 'Segoe UI', sans-serif;
+    overflow: hidden;
+    width: 100vw;
+    height: 100vh;
+  }
+
+  #slide {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+    background: #0a0c10;
+  }
+
+  #hud {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 28px;
+    background: linear-gradient(to top, rgba(0,0,0,0.82), transparent);
+    z-index: 100;
+    opacity: 1;
+    transition: opacity 1.2s ease;
+  }
+  #hud.hidden { opacity: 0; pointer-events: none; }
+
+  #page-name {
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.55);
+  }
+
+  #dots {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.25);
+    transition: all 0.4s ease;
+  }
+  .dot.active {
+    background: #ffffff;
+    transform: scale(1.4);
+  }
+
+  #progress-wrap {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: rgba(255,255,255,0.08);
+    z-index: 101;
+  }
+  #progress-bar {
+    height: 100%;
+    background: #4f8ef7;
+    width: 0%;
+    transition: width linear;
+  }
+
+  #overlay {
+    position: fixed;
+    inset: 0;
+    background: #0a0c10;
+    z-index: 99;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s ease;
+  }
+  #overlay.fade-in  { opacity: 1; }
+  #overlay.fade-out { opacity: 0; }
+
+  /* Aviso de sessão expirada */
+  #auth-warning {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(220, 80, 60, 0.92);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 10px 22px;
+    border-radius: 8px;
+    z-index: 200;
+    display: none;
+    letter-spacing: 0.04em;
+  }
+</style>
+</head>
+<body>
+
+<div id="overlay"></div>
+<iframe id="slide" src="about:blank" allowfullscreen></iframe>
+
+<div id="hud">
+  <span id="page-name"></span>
+  <div id="dots"></div>
+</div>
+
+<div id="progress-wrap">
+  <div id="progress-bar"></div>
+</div>
+
+<div id="auth-warning">⚠️ Sessão expirada — faça login no Power BI para retomar o slideshow</div>
+
+<script>
+  const PAGES = [
+    {
+      nome: "Relatório 1",
+      url:  "https://app.powerbi.com/groups/f2df78ef-bd81-4b65-9263-ce62683f2192/reports/2dee392c-0ec2-474f-8921-df22058b942e/b57affce695ffb583ef2?experience=power-bi",
+      tempo: 20
+    },
+    {
+      nome: "Overview",
+      url:  "https://app.powerbi.com/groups/f2df78ef-bd81-4b65-9263-ce62683f2192/reports/0e88a603-77cf-44fc-af62-b2a058771379/2f25e642206d833a5071?experience=power-bi",
+      tempo: 20
+    },
+    {
+      nome: "Overview II",
+      url:  "https://app.powerbi.com/groups/f2df78ef-bd81-4b65-9263-ce62683f2192/reports/0e88a603-77cf-44fc-af62-b2a058771379/28b95133285bd2096a2b?experience=power-bi",
+      tempo: 20
+    },
+    {
+      nome: "Em Atividade",
+      url:  "https://app.powerbi.com/groups/f2df78ef-bd81-4b65-9263-ce62683f2192/reports/0e88a603-77cf-44fc-af62-b2a058771379/bd159519bd3d01674395?experience=power-bi",
+      tempo: 20
+    },
+    {
+      nome: "Baixa Provisória",
+      url:  "https://app.powerbi.com/groups/f2df78ef-bd81-4b65-9263-ce62683f2192/reports/0e88a603-77cf-44fc-af62-b2a058771379/3be13a634315c9f5cd45?experience=power-bi",
+      tempo: 20
+    },
+    {
+      nome: "Encerrados",
+      url:  "https://app.powerbi.com/groups/f2df78ef-bd81-4b65-9263-ce62683f2192/reports/0e88a603-77cf-44fc-af62-b2a058771379/939bd46cc4ddb674cc91?experience=power-bi",
+      tempo: 20
+    },
+    {
+      nome: "Decisões",
+      url:  "https://app.powerbi.com/groups/f2df78ef-bd81-4b65-9263-ce62683f2192/reports/0e88a603-77cf-44fc-af62-b2a058771379/5c465d82f3c8798422b2?experience=power-bi",
+      tempo: 20
+    }
+  ];
+
+  const iframe      = document.getElementById('slide');
+  const pageName    = document.getElementById('page-name');
+  const dotsEl      = document.getElementById('dots');
+  const progressBar = document.getElementById('progress-bar');
+  const overlay     = document.getElementById('overlay');
+  const hud         = document.getElementById('hud');
+  const authWarning = document.getElementById('auth-warning');
+
+  let current  = 0;
+  let timer    = null;
+  let hudTimer = null;
+
+  // Cria dots
+  PAGES.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === 0 ? ' active' : '');
+    dotsEl.appendChild(d);
+  });
+
+  function getDots() { return document.querySelectorAll('.dot'); }
+
+  function showHud() {
+    hud.classList.remove('hidden');
+    clearTimeout(hudTimer);
+    hudTimer = setTimeout(() => hud.classList.add('hidden'), 4000);
+  }
+
+  // Detecta se o iframe foi redirecionado para login
+  iframe.addEventListener('load', () => {
+    try {
+      const url = iframe.contentWindow.location.href;
+      const isLogin = url.includes('login.microsoftonline') || url.includes('login.microsoft') || url.includes('login.live');
+      authWarning.style.display = isLogin ? 'block' : 'none';
+    } catch (e) {
+      // Cross-origin: se não consegue ler a URL, o BI carregou normalmente
+      authWarning.style.display = 'none';
+    }
+  });
+
+  function goTo(index) {
+    overlay.classList.add('fade-in');
+
+    setTimeout(() => {
+      current = index % PAGES.length;
+      const page = PAGES[current];
+
+      iframe.src = page.url;
+      pageName.textContent = page.nome;
+
+      getDots().forEach((d, i) => d.classList.toggle('active', i === current));
+
+      showHud();
+
+      overlay.classList.remove('fade-in');
+      overlay.classList.add('fade-out');
+
+      progressBar.style.transition = 'none';
+      progressBar.style.width = '0%';
+
+      const durMs = page.tempo * 1000;
+
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          progressBar.style.transition = `width ${durMs}ms linear`;
+          progressBar.style.width = '100%';
+        });
+      });
+
+      setTimeout(() => overlay.classList.remove('fade-out'), 500);
+
+      // Agenda próxima página
+      clearTimeout(timer);
+      timer = setTimeout(() => goTo(current + 1), durMs);
+
+    }, 500);
+  }
+
+  // Inicia
+  goTo(0);
+  hudTimer = setTimeout(() => hud.classList.add('hidden'), 4000);
+
+  // Clique mostra o HUD
+  document.addEventListener('click', showHud);
+</script>
+</body>
+</html>
